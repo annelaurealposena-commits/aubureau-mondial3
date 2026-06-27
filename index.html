@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Au Bureau — Pronostics Mondial 2026</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;background:#f8f6f2;color:#1e130a;min-height:100vh}
+.header{background:linear-gradient(135deg,#2c1a10,#3d2415);color:#fff;padding:20px;text-align:center}
+.logo{background:#fff;border-radius:10px;padding:6px 14px;display:inline-flex;flex-direction:column;align-items:center;line-height:1.2;margin-bottom:12px}
+.logo span:first-child{font-size:9px;color:#2c1a10;font-family:Georgia,serif;font-style:italic}
+.logo span:last-child{font-size:19px;font-weight:900;color:#2c1a10;font-family:Georgia,serif;letter-spacing:1.5px}
+.header h1{font-size:17px;font-weight:800;margin-bottom:3px}
+.header p{font-size:12px;opacity:.7}
+.content{padding:16px;max-width:480px;margin:0 auto}
+.card{background:#fff;border:1px solid #e2d9cc;border-radius:14px;padding:16px 18px;margin-bottom:12px}
+input,select{padding:11px 14px;border-radius:10px;border:1px solid #e2d9cc;font-size:15px;background:#fff;color:#1e130a;width:100%}
+input:focus,select:focus{outline:none;border-color:#c8a84b;box-shadow:0 0 0 3px rgba(200,168,75,.15)}
+.btn{padding:14px 20px;border-radius:10px;border:none;font-weight:700;font-size:15px;cursor:pointer;width:100%}
+.btn-primary{background:#2c1a10;color:#fff}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-secondary{background:#f1ece5;color:#1e130a;border:1px solid #e2d9cc;font-size:14px}
+.badge{font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;display:inline-block}
+.badge-gold{background:#c8a84b;color:#fff}
+.badge-green{background:#0e9f6e;color:#fff}
+.badge-amber{background:#d97706;color:#fff}
+.badge-gray{background:#e5e0d8;color:#8a7060}
+.muted{color:#8a7060;font-size:13px}
+.label{font-size:11px;font-weight:700;color:#8a7060;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.step{display:none}
+.step.active{display:block}
+.score-input{width:72px;text-align:center;font-size:28px;font-weight:800;padding:10px 4px;border-radius:10px}
+
+/* Écran code */
+#screen-code{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:#f8f6f2}
+.code-card{background:#fff;border:1px solid #e2d9cc;border-radius:20px;padding:32px 24px;max-width:380px;width:100%;text-align:center}
+#code-input-field{font-size:42px;font-weight:900;text-align:center;letter-spacing:14px;font-family:monospace;border:2px solid #e2d9cc;border-radius:12px;padding:16px 8px;margin-bottom:8px;color:#2c1a10}
+#code-input-field:focus{border-color:#c8a84b;box-shadow:0 0 0 3px rgba(200,168,75,.15);outline:none}
+#code-error{color:#dc2626;font-size:13px;min-height:20px;margin-bottom:12px}
+</style>
+</head>
+<body>
+
+<!-- ═══ ÉCRAN CODE ═══ -->
+<div id="screen-code">
+  <div class="code-card">
+    <div class="logo" style="margin-bottom:16px">
+      <span>On fait tout sauf bosser</span>
+      <span>AU BUREAU®</span>
+    </div>
+    <div style="font-size:40px;margin-bottom:12px">🔑</div>
+    <div style="font-weight:800;font-size:20px;margin-bottom:8px;color:#2c1a10">Code du match</div>
+    <div class="muted" style="margin-bottom:20px;line-height:1.6">Saisis le code à 4 chiffres<br>affiché en salle pour jouer.</div>
+    <input type="text" id="code-input-field" maxlength="4" inputmode="numeric" pattern="[0-9]*" placeholder="_ _ _ _"
+      oninput="this.value=this.value.replace(/[^0-9]/g,'');if(this.value.length===4)verifierCode()">
+    <div id="code-error"></div>
+    <button class="btn btn-primary" onclick="verifierCode()">Accéder au jeu →</button>
+    <div style="margin-top:16px;background:#fef9ee;border:1px solid #c8a84b;border-radius:10px;padding:10px 14px;font-size:12px;color:#92400e">
+      📍 Code affiché sur l'écran ou l'ardoise<br><strong>Au Bureau · 9 côte de Tireboeuf</strong>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ APPLI PRINCIPALE ═══ -->
+<div id="screen-app" style="display:none">
+
+  <div class="header">
+    <div class="logo"><span>On fait tout sauf bosser</span><span>AU BUREAU®</span></div>
+    <h1>⚽ Pronostics Mondial 2026</h1>
+    <p>Gratuit · Lots à gagner chaque soir</p>
+  </div>
+
+  <div class="content">
+    <div id="toast-area"></div>
+
+    <!-- Étape 1 : Identité -->
+    <div class="step active" id="step-identity">
+      <div class="card">
+        <div style="font-weight:800;font-size:18px;margin-bottom:4px">👋 Bienvenue !</div>
+        <div class="muted" style="margin-bottom:16px;line-height:1.6">Entre tes infos pour participer.<br>L'email permet de retrouver tes points d'une soirée à l'autre.</div>
+        <div class="label">Ton prénom *</div>
+        <input type="text" id="inp-name" placeholder="Ex : Thomas" style="margin-bottom:12px" autocomplete="given-name">
+        <div class="label">Ton email *</div>
+        <input type="email" id="inp-email" placeholder="thomas@email.com" style="margin-bottom:16px" autocomplete="email">
+        <button class="btn btn-primary" onclick="goToProno()">Continuer →</button>
+      </div>
+      <div class="card" style="background:#fef9ee;border-color:#c8a84b">
+        <div style="font-weight:700;font-size:13px;margin-bottom:10px">🎁 Lots à gagner</div>
+        <div class="muted">🍺 <strong>Ce soir :</strong> Meilleur pronostiqueur → consommation offerte</div>
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid #e2d9cc">
+          <div style="font-weight:600;font-size:13px;margin-bottom:6px">🏆 Grand prix final (cumul tournoi)</div>
+          <div class="muted">🥇 1ère place → bon cadeau <strong>50 €</strong></div>
+          <div class="muted" style="margin-top:3px">🥈 2ème place → plateau finger food taille L</div>
+          <div class="muted" style="margin-top:3px">🥉 3ème place → consommation offerte</div>
+        </div>
+      </div>
+      <div class="card" style="background:#fff8f0;border-color:#fca5a5;padding:10px 14px">
+        <div style="font-size:12px;color:#92400e;line-height:1.5">⚠️ Réservé aux clients en cours de consommation · Majeurs uniquement<br>ALPOSENA · lepuyenvelay@aubureau.fr</div>
+      </div>
+    </div>
+
+    <!-- Étape 2 : Pronostic -->
+    <div class="step" id="step-prono">
+      <div class="card" style="border-left:4px solid #c8a84b" id="prono-match-card">
+        <div style="font-weight:700;font-size:15px;margin-bottom:4px" id="prono-match-title"></div>
+        <div class="muted" id="prono-match-sub" style="margin-bottom:16px"></div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:20px">
+          <div style="text-align:center;flex:1">
+            <div style="font-size:32px" id="prono-flag1"></div>
+            <div style="font-weight:700;font-size:13px;margin-top:4px" id="prono-t1"></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <input type="number" class="score-input" id="p1" min="0" max="20" value="0">
+            <span style="font-size:24px;font-weight:700;color:#8a7060">–</span>
+            <input type="number" class="score-input" id="p2" min="0" max="20" value="0">
+          </div>
+          <div style="text-align:center;flex:1">
+            <div style="font-size:32px" id="prono-flag2"></div>
+            <div style="font-weight:700;font-size:13px;margin-top:4px" id="prono-t2"></div>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="submitProno()">✅ Valider mon pronostic</button>
+      </div>
+      <button class="btn btn-secondary" style="margin-top:4px" onclick="showStep('step-identity')">← Retour</button>
+    </div>
+
+    <!-- Étape 3 : Confirmation -->
+    <div class="step" id="step-confirm">
+      <div style="text-align:center;padding:2rem 0">
+        <div style="font-size:64px;margin-bottom:12px">🎉</div>
+        <div style="font-weight:800;font-size:22px;margin-bottom:8px">C'est enregistré !</div>
+        <div class="muted" style="margin-bottom:20px">Profite du match — les points se calculent automatiquement !</div>
+      </div>
+      <div class="card" id="recap-card"></div>
+      <button class="btn btn-secondary" style="margin-top:8px" onclick="voirClassement()">🏆 Classement en direct</button>
+    </div>
+
+    <!-- Classement -->
+    <div class="step" id="step-classement">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <button onclick="showStep('step-confirm')" style="background:none;border:none;cursor:pointer;font-size:20px;color:#8a7060">←</button>
+        <div style="font-weight:800;font-size:18px">🏆 Classement en direct</div>
+      </div>
+      <div id="classement-list"></div>
+      <button class="btn btn-secondary" style="margin-top:8px" onclick="chargerClassement()">🔄 Actualiser</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPA_URL="https://gadxxujjdqzeayjtjeqk.supabase.co";
+const SUPA_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdhZHh4dWpqZHF6ZWF5anRqZXFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NTY0OTQsImV4cCI6MjA5NzQzMjQ5NH0.8yX4j3utY7vCBt4kGDRbzbVCELf5dHIvmtw4V5f5HXI";
+const H={"Content-Type":"application/json","apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY};
+const CODE_SEL="AUBUREAU2026";
+
+let playerName="",playerEmail="",unlockedMatch=null;
+
+async function api(path,method="GET",body=null){
+  const opts={method,headers:{...H}};
+  if(body) opts.body=JSON.stringify(body);
+  const r=await fetch(SUPA_URL+"/rest/v1/"+path,opts);
+  if(!r.ok) throw new Error(await r.text());
+  if(r.status===204) return null;
+  return r.json();
+}
+
+function calcPts(p1,p2,s1,s2){
+  if(p1===s1&&p2===s2) return 3;
+  if(p1-p2===s1-s2) return 2;
+  if((p1>p2&&s1>s2)||(p1<p2&&s1<s2)||(p1===p2&&s1===s2)) return 1;
+  return 0;
+}
+
+function ptsBadge(pts){
+  if(pts===null||pts===undefined) return '<span class="badge badge-gray">En attente</span>';
+  if(pts===3) return '<span class="badge badge-gold">3 pts ⚡</span>';
+  if(pts===2) return '<span class="badge badge-green">2 pts</span>';
+  if(pts===1) return '<span class="badge badge-amber">1 pt</span>';
+  return '<span class="badge badge-gray">0 pt</span>';
+}
+
+function showStep(id){
+  document.querySelectorAll(".step").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+// ═══ VÉRIFICATION CODE ═══
+function genCode(matchId,t1,t2){
+  let hash=0;
+  const str=`${matchId}|${t1}|${t2}|${CODE_SEL}`;
+  for(let i=0;i<str.length;i++) hash=((hash<<5)-hash)+str.charCodeAt(i)|0;
+  return String(Math.abs(hash)%10000).padStart(4,"0");
+}
+
+async function verifierCode(){
+  const input=document.getElementById("code-input-field").value.trim();
+  const errEl=document.getElementById("code-error");
+  errEl.textContent="";
+  if(input.length!==4){errEl.textContent="Saisis les 4 chiffres du code.";return;}
+  try{
+    const r=await fetch(SUPA_URL+"/rest/v1/matches?validated=eq.false&select=id,t1,t2,flag1,flag2,date_match,hour_match&order=id.asc",{
+      method:"GET",
+      headers:{
+        "apikey":SUPA_KEY,
+        "Authorization":"Bearer "+SUPA_KEY,
+        "Content-Type":"application/json",
+        "Accept":"application/json"
+      }
+    });
+    if(!r.ok) throw new Error("HTTP "+r.status+" — "+await r.text());
+    const matches=await r.json();
+    console.log("Matchs trouvés:",matches?.length, matches);
+    if(!matches||matches.length===0){
+      errEl.textContent="Aucun match disponible pour l'instant.";
+      return;
+    }
+    const found=matches.find(m=>{
+      const expected=genCode(m.id,m.t1,m.t2);
+      console.log(`Match ${m.id} (${m.t1} vs ${m.t2}) → code attendu: ${expected}`);
+      return expected===input;
+    });
+    if(found){
+      unlockedMatch=found;
+      document.getElementById("screen-code").style.display="none";
+      document.getElementById("screen-app").style.display="block";
+      afficherMatchProno();
+    } else {
+      errEl.textContent="❌ Code incorrect — vérifie le code affiché en salle.";
+      document.getElementById("code-input-field").value="";
+      document.getElementById("code-input-field").focus();
+    }
+  }catch(e){
+    console.error("Erreur verifierCode:",e);
+    errEl.textContent="Erreur : "+e.message;
+  }
+}
+
+// ═══ PRONOSTIC ═══
+function afficherMatchProno(){
+  if(!unlockedMatch) return;
+  const m=unlockedMatch;
+  document.getElementById("prono-match-title").textContent=`${m.flag1} ${m.t1} vs ${m.t2} ${m.flag2}`;
+  document.getElementById("prono-match-sub").textContent=`📅 ${m.date_match} · ${m.hour_match}`;
+  document.getElementById("prono-flag1").textContent=m.flag1;
+  document.getElementById("prono-t1").textContent=m.t1;
+  document.getElementById("prono-flag2").textContent=m.flag2;
+  document.getElementById("prono-t2").textContent=m.t2;
+}
+
+function goToProno(){
+  playerName=document.getElementById("inp-name").value.trim();
+  playerEmail=document.getElementById("inp-email").value.trim();
+  if(!playerName){alert("Entre ton prénom pour continuer 😊");return;}
+  if(!playerEmail){alert("Entre ton email pour continuer 😊");return;}
+  if(!playerEmail.includes("@")){alert("Entre un email valide 😊");return;}
+  afficherMatchProno();
+  showStep("step-prono");
+}
+
+async function submitProno(){
+  const p1=parseInt(document.getElementById("p1").value)||0;
+  const p2=parseInt(document.getElementById("p2").value)||0;
+  const m=unlockedMatch;
+  try{
+    // Vérification doublon email + match (si email saisi)
+    if(playerEmail){
+      const checkEmail=await fetch(SUPA_URL+"/rest/v1/pronos?match_id=eq."+m.id+"&email=eq."+encodeURIComponent(playerEmail)+"&select=id",{
+        headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY}
+      });
+      const existEmail=await checkEmail.json();
+      if(existEmail&&existEmail.length>0){
+        alert("❌ Cet email a déjà été utilisé pour ce match !");
+        return;
+      }
+    }
+
+    // Insertion
+    const pts=(m.validated&&m.score1!==null)?calcPts(p1,p2,m.score1,m.score2):null;
+    const r=await fetch(SUPA_URL+"/rest/v1/pronos",{
+      method:"POST",
+      headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY,"Content-Type":"application/json"},
+      body:JSON.stringify({match_id:m.id,name:playerName,email:playerEmail||null,p1,p2,pts})
+    });
+    if(!r.ok){const err=await r.text();alert("Erreur : "+err);return;}
+    document.getElementById("recap-card").innerHTML=`
+      <div style="font-weight:700;font-size:15px;margin-bottom:12px">📋 Ton pronostic, ${playerName}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0">
+        <div>
+          <div style="font-weight:600">${m.flag1} ${m.t1} vs ${m.t2} ${m.flag2}</div>
+          <div class="muted">Ton prono : <strong>${p1}–${p2}</strong></div>
+        </div>
+        ${ptsBadge(pts)}
+      </div>`;
+    showStep("step-confirm");
+  }catch(e){
+    alert("Erreur de connexion : "+e.message);
+  }
+}
+
+// ═══ CLASSEMENT ═══
+async function voirClassement(){
+  showStep("step-classement");
+  await chargerClassement();
+}
+
+async function chargerClassement(){
+  const el=document.getElementById("classement-list");
+  el.innerHTML=`<div style="text-align:center;padding:1rem;color:#8a7060">Chargement…</div>`;
+  try{
+    const matches=await api("matches?select=id,validated");
+    const data=await api("pronos?select=name,pts,match_id");
+    const vIds=new Set((matches||[]).filter(m=>m.validated).map(m=>m.id));
+    const totals={};
+    (data||[]).forEach(p=>{
+      if(!vIds.has(p.match_id)) return;
+      if(!totals[p.name]) totals[p.name]={pts:0,exact:0,played:0};
+      totals[p.name].pts+=(p.pts||0);totals[p.name].played+=1;
+      if(p.pts===3) totals[p.name].exact+=1;
+    });
+    const lb=Object.entries(totals).sort((a,b)=>b[1].pts-a[1].pts||b[1].exact-a[1].exact);
+    if(!lb.length){el.innerHTML=`<div style="text-align:center;padding:1.5rem;color:#8a7060">⏳ Aucun résultat encore — reviens après le match !</div>`;return;}
+    const medals=["🥇","🥈","🥉"];
+    el.innerHTML=lb.map(([name,d],i)=>{
+      const r=i+1;
+      const isMe=name===playerName;
+      const bg=isMe?"#fef9c3":r===1?"#fffdf0":"#fff";
+      const bc=isMe?"#c8a84b":"#e2d9cc";
+      return `<div style="display:flex;align-items:center;gap:10px;background:${bg};border:1px solid ${bc};border-radius:12px;padding:10px 14px;margin-bottom:6px">
+        <span style="font-size:${r<=3?24:16}px;min-width:32px;text-align:center">${r<=3?medals[r-1]:r}</span>
+        <div style="flex:1">
+          <span style="font-weight:700">${name}${isMe?" 👈 toi":""}</span>
+          <div class="muted">${d.played} match${d.played>1?"s":""} · ${d.exact} exact${d.exact>1?"s":""}</div>
+        </div>
+        <span style="font-size:22px;font-weight:900;color:#2c1a10">${d.pts}</span>
+        <span class="muted">pts</span>
+      </div>`;
+    }).join("");
+  }catch(e){el.innerHTML=`<div style="color:#dc2626;padding:1rem">Erreur de chargement</div>`;}
+}
+
+function nouveauJoueur(){
+  playerName="";playerEmail="";
+  document.getElementById("inp-name").value="";
+  document.getElementById("inp-email").value="";
+  document.getElementById("p1").value=0;
+  document.getElementById("p2").value=0;
+  showStep("step-identity");
+}
+</script>
+</body>
+</html>

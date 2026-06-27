@@ -87,7 +87,7 @@ input:focus,select:focus{outline:none;border-color:#c8a84b;box-shadow:0 0 0 3px 
       </div>
       <div class="card" style="background:#fef9ee;border-color:#c8a84b">
         <div style="font-weight:700;font-size:13px;margin-bottom:10px">🎁 Lots à gagner</div>
-        <div class="muted">🍺 <strong>Ce soir :</strong> Meilleur pronostiqueur → consommation offerte</div>
+        <div class="muted">🍺 <strong>Ce soir :</strong> Tu as annoncé le score exact ? Gagne une conso ! <span style="font-size:12px">(bières, cocktails, mocktails ou soft)</span></div>
         <div style="margin-top:10px;padding-top:10px;border-top:1px solid #e2d9cc">
           <div style="font-weight:600;font-size:13px;margin-bottom:6px">🏆 Grand prix final (cumul tournoi)</div>
           <div class="muted">🥇 1ère place → bon cadeau <strong>50 €</strong></div>
@@ -201,25 +201,12 @@ async function verifierCode(){
   try{
     const r=await fetch(SUPA_URL+"/rest/v1/matches?validated=eq.false&select=id,t1,t2,flag1,flag2,date_match,hour_match&order=id.asc",{
       method:"GET",
-      headers:{
-        "apikey":SUPA_KEY,
-        "Authorization":"Bearer "+SUPA_KEY,
-        "Content-Type":"application/json",
-        "Accept":"application/json"
-      }
+      headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY,"Content-Type":"application/json","Accept":"application/json"}
     });
     if(!r.ok) throw new Error("HTTP "+r.status+" — "+await r.text());
     const matches=await r.json();
-    console.log("Matchs trouvés:",matches?.length, matches);
-    if(!matches||matches.length===0){
-      errEl.textContent="Aucun match disponible pour l'instant.";
-      return;
-    }
-    const found=matches.find(m=>{
-      const expected=genCode(m.id,m.t1,m.t2);
-      console.log(`Match ${m.id} (${m.t1} vs ${m.t2}) → code attendu: ${expected}`);
-      return expected===input;
-    });
+    if(!matches||matches.length===0){errEl.textContent="Aucun match disponible pour l'instant.";return;}
+    const found=matches.find(m=>genCode(m.id,m.t1,m.t2)===input);
     if(found){
       unlockedMatch=found;
       document.getElementById("screen-code").style.display="none";
@@ -231,7 +218,6 @@ async function verifierCode(){
       document.getElementById("code-input-field").focus();
     }
   }catch(e){
-    console.error("Erreur verifierCode:",e);
     errEl.textContent="Erreur : "+e.message;
   }
 }
@@ -263,7 +249,7 @@ async function submitProno(){
   const p2=parseInt(document.getElementById("p2").value)||0;
   const m=unlockedMatch;
   try{
-    // Vérification doublon email + match (si email saisi)
+    // Vérification doublon email
     if(playerEmail){
       const checkEmail=await fetch(SUPA_URL+"/rest/v1/pronos?match_id=eq."+m.id+"&email=eq."+encodeURIComponent(playerEmail)+"&select=id",{
         headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY}
@@ -274,7 +260,6 @@ async function submitProno(){
         return;
       }
     }
-
     // Insertion
     const pts=(m.validated&&m.score1!==null)?calcPts(p1,p2,m.score1,m.score2):null;
     const r=await fetch(SUPA_URL+"/rest/v1/pronos",{
@@ -337,15 +322,6 @@ async function chargerClassement(){
       </div>`;
     }).join("");
   }catch(e){el.innerHTML=`<div style="color:#dc2626;padding:1rem">Erreur de chargement</div>`;}
-}
-
-function nouveauJoueur(){
-  playerName="";playerEmail="";
-  document.getElementById("inp-name").value="";
-  document.getElementById("inp-email").value="";
-  document.getElementById("p1").value=0;
-  document.getElementById("p2").value=0;
-  showStep("step-identity");
 }
 </script>
 </body>
